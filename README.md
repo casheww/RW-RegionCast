@@ -7,5 +7,6 @@ This mod was built for BepInEx so it probably won't work with standard Partialit
 ### The IMPORTANT bit:
   1) Place the `DiscordGameSDK` folder in the same place as your `Rain World.exe`
   2) Place `RegionCast.dll` in `BepInEx/plugins` (it is a mod)
+  The `.cs` files are not required to run the mod.
 
 Please contact casheww#7881 in the Rain World Discord if you have any difficulties <3
