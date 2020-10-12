@@ -7,6 +7,7 @@ This mod was built for BepInEx so it probably won't work with standard Partialit
 For anyone looking to modify the source code, the Setter code is from a .NET Core console app project, and the Trigger is from a .NET Framework 3.5 class library.
 
 ### The IMPORTANT bit:
+[Download](https://github.com/casheww/RW-RegionCast/releases/tag/v0.1)
   1) Place the `DiscordGameSDK` folder in the same place as your `Rain World.exe`
   2) Place `RegionCast.dll` in `BepInEx/plugins` (it is a mod)
 
