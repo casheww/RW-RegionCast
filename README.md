@@ -1,6 +1,6 @@
 ## casheww's RegionCast
 
-Rain World RegionCast is a BepInEx mod written by casheww that enables Discord Rich Presence for Rain World, allowing players to snoop on each others current region and adds the region landscape art as Rich Presence assets.
+Rain World RegionCast is a BepInEx mod that enables Discord Rich Presence for Rain World, allowing players to snoop on each others current region and adds the region landscape art as Rich Presence assets.
 
 This mod was built for BepInEx so it probably won't work with standard Partiality, though I don't think it uses anything BepInEx reliant, so it *could* be modified for Partiality.
 
