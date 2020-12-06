@@ -231,3 +231,4 @@ ImageManager.cs
 LobbyManager.cs
 StorageManager.cs
 StoreManager.cs
+launchSettings.json
