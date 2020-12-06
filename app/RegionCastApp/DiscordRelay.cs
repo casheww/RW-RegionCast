@@ -10,6 +10,8 @@ namespace RCApp
 {
     class DiscordRelay
     {
+        static Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
+
         static long startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         static string lastGameMode = "";
         static string lastLocation = "";
@@ -45,10 +47,6 @@ namespace RCApp
             }            
         }
 
-        static Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
-        static Discord.ActivityManager activityManager;
-        static Discord.Activity activity;
-
         static void RunReceiveLoop(UdpClient udp, IPEndPoint endpoint)
         {
             // state to pass to async receiver
@@ -59,14 +57,15 @@ namespace RCApp
             };
 
             bool rwIsOpen = CheckRWIsOpen();
-            bool lastRunReceivedMessage = false;
+            bool lastRunReceivedMessage = false; bool firstRun = true;
             while (rwIsOpen)
             {
-                if (!lastRunReceivedMessage)
+                if (lastRunReceivedMessage || firstRun)
                 {
                     // start async receiver
                     udp.BeginReceive(new AsyncCallback(RunReceiver), state);
                 }
+                firstRun = false;
 
                 rwIsOpen = CheckRWIsOpen();
 
@@ -103,8 +102,8 @@ namespace RCApp
 
         static void SetPresence()
         {
-            activityManager = discord.GetActivityManager();
-            activity = new Discord.Activity();
+            Discord.Activity activity = new Discord.Activity();
+            activity.Instance = true;
 
             // set gamemode
             if (message.ContainsKey("gamemode"))
@@ -130,6 +129,10 @@ namespace RCApp
                 {
                     return;
                 }
+                else
+                {
+                    lastLocation = message["location"];
+                }
 
                 // if the location is not a region from the base game, set thumbnail
                 // todo: try to use CRS to get custom region art/names??
@@ -153,7 +156,14 @@ namespace RCApp
             }
 
             Console.WriteLine("about to update activity");
-            activityManager.UpdateActivity(activity, (res) => { Console.WriteLine($"{res}"); });
+            Discord.ActivityManager activityManager = discord.GetActivityManager();
+            Discord.ActivityManager.UpdateActivityHandler uaHandler = UpdateActivityCallback;
+            activityManager.UpdateActivity(activity, uaHandler);
+        }
+
+        static void UpdateActivityCallback(Discord.Result res)
+        {
+            Console.WriteLine(res);
         }
 
         struct UdpState
