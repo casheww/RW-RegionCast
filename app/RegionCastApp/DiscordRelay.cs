@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 
-namespace RegionCastApp
+namespace RCApp
 {
     class DiscordRelay
     {
