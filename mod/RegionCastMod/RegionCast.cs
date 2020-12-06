@@ -3,7 +3,7 @@ using System.IO;
 using BepInEx;
 using UnityEngine;
 
-namespace RegionCastMod
+namespace RegionCast
 {
     [BepInPlugin("casheww.region_cast_discord", "RegionCast", "1.0.0")]
     public class RegionCast : BaseUnityPlugin
@@ -25,7 +25,7 @@ namespace RegionCastMod
         {
             orig(self);
 
-            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\RegionCastApp.exe";
+            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\RCApp.exe";
             castRecApp = System.Diagnostics.Process.Start(path);
 
             if (castRecApp is null)
