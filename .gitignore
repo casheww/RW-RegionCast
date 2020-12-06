@@ -232,3 +232,4 @@ LobbyManager.cs
 StorageManager.cs
 StoreManager.cs
 launchSettings.json
+*.csproj
