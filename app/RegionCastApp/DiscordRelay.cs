@@ -14,7 +14,7 @@ namespace RCApp
 
         static long startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         static string lastGameMode = "";
-        static string lastLocation = "";
+        static string lastLocation = "none";
 
         static bool messageReceived = false;
         static Dictionary<string, string> message;
@@ -81,6 +81,9 @@ namespace RCApp
                 }
                 discord.RunCallbacks();
             }
+
+            // close
+            discord.GetActivityManager().ClearActivity(UpdateActivityCallback);
         }
 
         static void RunReceiver(IAsyncResult result)

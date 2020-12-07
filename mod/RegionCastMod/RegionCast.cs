@@ -15,8 +15,8 @@ namespace RegionCast
         public RegionCast()
         {
             transmitter = new Transmitter(this);
-
             On.RainWorld.Start += RainWorld_Start;
+            On.Menu.MainMenu.ctor += MainMenu_ctor;
             On.RainWorldGame.ExitToMenu += RainWorldGame_ExitToMenu;
             On.Player.Update += Player_Update;
         }
@@ -36,7 +36,11 @@ namespace RegionCast
                 Destroy(GetComponent<RegionCast>());
                 return;
             }
-
+        }
+        
+        void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
+        {
+            orig(self, manager, showRegionSpecificBkg);
             transmitter.SendUDP(Transmitter.GameMode.Menu);
         }
 
