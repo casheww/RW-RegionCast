@@ -233,3 +233,4 @@ StorageManager.cs
 StoreManager.cs
 launchSettings.json
 *.csproj
+RegionCast*.zip
