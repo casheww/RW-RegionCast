@@ -1,3 +1,7 @@
+# This version is outdated
+For the new version see https://github.com/casheww/RW-RegionCast .
+
+
 ## casheww's RegionCast
 
 Rain World RegionCast is a BepInEx mod that enables Discord Rich Presence for Rain World, allowing players to snoop on each others current region and adds the region landscape art as Rich Presence assets.
