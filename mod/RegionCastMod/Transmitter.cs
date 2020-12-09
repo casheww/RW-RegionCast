@@ -64,7 +64,7 @@ namespace RegionCast
             }
         }
 
-        public void SendUDP(GameMode gameMode, string location = "", int playerCount = 0)
+        public void SendUDP(GameMode gameMode, string location = "", string regionCode = "", int playerCount = 0)
         {
             /* Sends a UDP message to localhost:49181 where the RegionCastApp should be listening.
              * gameMode : the current game mode 
@@ -74,6 +74,7 @@ namespace RegionCast
             string data = $"rwRegionCastData\n" +
                 $"gamemode:{gameMode}\n" +
                 $"location:{location}\n" +
+                $"regioncode:{regionCode}\n" +
                 $"playercount:{playerCount}";
             byte[] message = Encoding.UTF8.GetBytes(data);
             
