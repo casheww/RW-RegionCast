@@ -1,7 +1,9 @@
 function generateList(data){
     var regions = [];
     $.each( data, function(key, val) {
-        var content = "<b>"+key+"</b>  -  " + val.author;
+        var authorString = val.authors.join(", ");
+
+        var content = '<b><a href="' + val.url + '">' + key + '</a></b>  -  ' + authorString;
         $("#regionList").append('<li id="' + key + '">' + content + '</li>');
     });
 }
