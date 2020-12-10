@@ -142,22 +142,14 @@ namespace RCApp
             if (message.ContainsKey("regioncode"))
             {
                 string code = message["regioncode"];
-                if (Parsing.ValidCodeForThumbnail(code))
+
+                if (Parsing.ValidRegion(code))
                 {
                     activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
                 }
                 else
                 {
-                    if (rootUpdate && code != "")
-                    {
-                        activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
-                    }
-                    else
-                    {
-                        // in this case requesting the custom region thumbnail has failed already
-                        // or the regioncode was empty
-                        activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
-                    }
+                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
                 }
 
             }
