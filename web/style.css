@@ -1,26 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
 
 :root {
     --bg: #222;
+    --bg2: #151510;
     --fg: #ddd;
+    --fg2: #db9;
     --dull-fg: #aaa;
+    --highlight: #c95;
+    --cta: #e75;
 }
 
 body {
-    margin-left: 2vw;
-    width: 96vw;
+    margin: 0;
     background-color: var(--bg);
     color: var(--fg);
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
+    font-size: 1.05em;
 }
 
-#header {
-    width: 20vw;
-    border-bottom: 1px solid var(--dull-fg);
+.buffer {
+    background-color: var(--bg2);
+    width: 100%;
+}
+#footer {
+    position: fixed;
+    bottom: 0;
+    padding: 1%;
+    text-align: center;
+    font-size: 0.9em;
 }
 
-#links {
-    list-style-image: url('https://static.wikia.nocookie.net/rainworld_gamepedia/images/7/73/Orangewalk.gif');
+h1#title {
+    margin: 0;
+    padding: 1%;
+    padding-left: 2%;
+    color: var(--highlight);
+}
+p.warning {
+    padding-left: 2%;
+    padding-bottom: 0.5%;
+}
+
+span div.noscript {
+    background-color: var(--cta);
+    color: black;
+    padding: 1%;
+}
+
+#main {
+    margin: 4%;
+    margin-top: 1.5%;
+}
+
+i.q {
+    color: var(--fg2);
+    font-size: 1.1em;
 }
 
 .divdiv {
@@ -29,12 +63,27 @@ body {
     border-bottom: 1px solid var(--dull-fg);
 }
 
+ul#regionList li b {
+    color: var(--fg2);
+}
+
 a {
-    color: #c95;
+    color: var(--highlight);
 }
 a:visited {
-    color: rgb(102, 70, 129);
+    color: rgb(122, 87, 150);
 }
 a:hover {
-    color: rgb(238, 186, 44);
+    color: rgb(238, 160, 44);
+}
+
+footer a {
+    color: #eb9;
+    text-decoration: none;
+}
+footer a:visited {
+    color: #cb9;
+}
+footer a:hover {
+    color: #fa8;
 }
