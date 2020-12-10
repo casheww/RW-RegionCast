@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+:root {
+    --bg: #222;
+    --fg: #ddd;
+    --dull-fg: #aaa;
+}
+
+body {
+    margin-left: 2vw;
+    width: 96vw;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: Roboto;
+}
+
+#header {
+    width: 20vw;
+    border-bottom: 1px solid var(--dull-fg);
+}
+
+#links {
+    list-style-image: url('https://static.wikia.nocookie.net/rainworld_gamepedia/images/7/73/Orangewalk.gif');
+}
+
+.divdiv {
+    padding-top: 1vw;
+    width: 20vw;
+    border-bottom: 1px solid var(--dull-fg);
+}
+
+a {
+    color: #c95;
+}
+a:visited {
+    color: rgb(102, 70, 129);
+}
+a:hover {
+    color: rgb(238, 186, 44);
+}
