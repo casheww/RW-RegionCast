@@ -29,4 +29,4 @@ Any issues? You can reach me on the [Rain World Discord](https://discord.gg/rain
 
 ---
 
-Special thanks to Fyre, bee, thalber, Garrakx, Slime_Cubed.
+Special thanks to [Fyre](https://github.com/FyreByrns), bee, [thalber](https://github.com/thalber), [Garrakx](https://github.com/Garrakx), Slime_Cubed.
