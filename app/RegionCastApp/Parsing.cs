@@ -4,37 +4,17 @@ namespace RCApp
 {
     class Parsing
     {
-        static public string GetRegionName(string code)
+        static public bool ValidCodeForThumbnail(string code)
         {
-            /* Tries to return the full region name from the region code.
-             * If matching fails, it is either a custom region or an arena and
-             * the given code is returned. DiscordRelay.SetPresence has
-             * measures for this. */
-            Dictionary<string, string> nameDict = new Dictionary<string, string>
+            string[] regions = { "CC", "DS", "GW", "HI", "LF", "SB", "SH", "SI", "SL", "SS", "SU", "UW" };
+            foreach (string r in regions)
             {
-                { "CC", "Chimney Canopy" },
-                { "DS", "Drainage System" },
-                { "GW", "Garbage Wastes" },
-                { "HI", "Industrial Complex" },
-                { "LF", "Farm Arrays" },
-                { "SB", "Subterranean" },
-                { "SH", "Shaded Citadel" },
-                { "SI", "Sky Islands" },
-                { "SL", "Shoreline" },
-                { "SS", "Super Structure" },
-                { "SU", "Outskirts" },
-                { "UW", "The Exterior" },
-            };
-
-            if (nameDict.ContainsKey(code))
-            {
-                return nameDict[code];
+                if (r == code)
+                {
+                    return true;
+                }
             }
-            else
-            {
-                // todo: co-op compat?
-                return code;
-            }
+            return false;
         }
 
         static public Dictionary<string, string> ParseUdpMessage(string message)

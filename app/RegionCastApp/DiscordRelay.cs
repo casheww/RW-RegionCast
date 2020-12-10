@@ -103,7 +103,7 @@ namespace RCApp
             }
         }
 
-        static void SetPresence()
+        static void SetPresence(bool rootUpdate = true)
         {
             Discord.Activity activity = new Discord.Activity();
             activity.Instance = true;
@@ -122,10 +122,10 @@ namespace RCApp
             }
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
-            // set location name and thumbnail
+            // set location name
             if (message.ContainsKey("location"))
             {
-                activity.Details = Parsing.GetRegionName(message["location"]);
+                activity.Details = message["location"];
 
                 // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
                 if (lastLocation == message["location"])
@@ -136,17 +136,30 @@ namespace RCApp
                 {
                     lastLocation = message["location"];
                 }
+            }
 
-                // if the location is not a region from the base game, set thumbnail
-                // todo: try to use CRS to get custom region art/names??
-                if (activity.Details == message["location"])
+            // thumbnail and fallback location name
+            if (message.ContainsKey("regioncode"))
+            {
+                string code = message["regioncode"];
+                if (Parsing.ValidCodeForThumbnail(code))
                 {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
+                    activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
                 }
                 else
                 {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = message["location"].ToLower() };
+                    if (rootUpdate && code != "")
+                    {
+                        activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
+                    }
+                    else
+                    {
+                        // in this case requesting the custom region thumbnail has failed already
+                        // or the regioncode was empty
+                        activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
+                    }
                 }
+
             }
 
             // set playercount if it's not 0 (singleplayer)
@@ -158,13 +171,32 @@ namespace RCApp
                 }
             }
 
-            Console.WriteLine("about to update activity");
+            Console.WriteLine($"about to update activity : {activity.Details}");
             Discord.ActivityManager activityManager = discord.GetActivityManager();
-            Discord.ActivityManager.UpdateActivityHandler uaHandler = UpdateActivityCallback;
+
+            Discord.ActivityManager.UpdateActivityHandler uaHandler;
+            if (rootUpdate)
+            {
+                uaHandler = UpdateActivityCallback;
+            }
+            else
+            {
+                uaHandler = UpdateActivityCallback_NoRety;
+            }
+
             activityManager.UpdateActivity(activity, uaHandler);
         }
 
         static void UpdateActivityCallback(Discord.Result res)
+        {
+            Console.WriteLine(res);
+            if (res != 0)
+            {
+                Console.WriteLine("retrying activity update");
+                SetPresence(false);
+            }
+        }
+        static void UpdateActivityCallback_NoRety(Discord.Result res)
         {
             Console.WriteLine(res);
         }
