@@ -14,7 +14,9 @@ namespace RegionCast
 
         public Transmitter(RegionCast mod)
         {
-            string configPath = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\config.txt";
+            string configPath = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "config.txt";
             string[] config = File.ReadAllLines(configPath);
 
             AttemptToMakeEndpoint(config, mod);
@@ -79,7 +81,7 @@ namespace RegionCast
             byte[] message = Encoding.UTF8.GetBytes(data);
             
             socket.SendTo(message, endpoint);
-            Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RegionCastApp");
+            Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RCApp.exe");
         }
     }
 }

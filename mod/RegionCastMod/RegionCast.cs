@@ -25,7 +25,9 @@ namespace RegionCast
         {
             orig(self);
 
-            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\RCApp.exe";
+            string path = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "RCApp.exe";
             castRecApp = System.Diagnostics.Process.Start(path);
 
             if (castRecApp is null)

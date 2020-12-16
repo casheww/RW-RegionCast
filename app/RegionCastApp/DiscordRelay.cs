@@ -23,7 +23,9 @@ namespace RCApp
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
 
-            string configPath = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\config.txt";
+            string configPath = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "config.txt";
             string[] config = File.ReadAllLines(configPath);
 
             bool validPort = int.TryParse(config[0], out int port);
@@ -37,7 +39,9 @@ namespace RCApp
 
         private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
         {
-            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\exception.log";
+            string path = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "exception.log";
             Exception exception = e.ExceptionObject as Exception;
             if (exception is null) { return; }
 
