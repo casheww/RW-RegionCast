@@ -129,16 +129,22 @@ namespace RCApp
             // set location name
             if (message.ContainsKey("location"))
             {
-                activity.Details = message["location"];
+                string location = message["location"];
+
+                // remove vanilla spoilers
+                location = location.Replace("Looks to the Moon", "LttM");
+                location = location.Replace("Five Pebbles", "5P");
+
+                activity.Details = location;
 
                 // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
-                if (lastLocation == message["location"])
+                if (lastLocation == location)
                 {
                     return;
                 }
                 else
                 {
-                    lastLocation = message["location"];
+                    lastLocation = location;
                 }
             }
 
