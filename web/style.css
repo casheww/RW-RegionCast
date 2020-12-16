@@ -64,8 +64,11 @@ i.q {
     border-bottom: 1px solid var(--dull-fg);
 }
 
-ul#regionList li b {
-    color: var(--fg2);
+ul#regionList li a {
+    color: var(--highlight)
+}
+ul#regionList li a:hover {
+    color:  rgb(238, 160, 44);
 }
 
 a {
