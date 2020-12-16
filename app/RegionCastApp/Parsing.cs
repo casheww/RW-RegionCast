@@ -55,9 +55,9 @@ namespace RCApp
             }
             foreach (var pair in packs)
             {
+                System.Console.WriteLine(pair.Value.code);
                 codes.Add(pair.Value.code);
             }
-            System.Console.WriteLine(codes[0]);
             return codes;
         }
 

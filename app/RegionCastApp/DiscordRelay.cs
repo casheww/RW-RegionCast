@@ -107,7 +107,7 @@ namespace RCApp
             }
         }
 
-        static void SetPresence(bool rootUpdate = true)
+        static void SetPresence()
         {
             Discord.Activity activity = new Discord.Activity();
             activity.Instance = true;
@@ -176,29 +176,10 @@ namespace RCApp
             Console.WriteLine($"about to update activity : {activity.Details}");
             Discord.ActivityManager activityManager = discord.GetActivityManager();
 
-            Discord.ActivityManager.UpdateActivityHandler uaHandler;
-            if (rootUpdate)
-            {
-                uaHandler = UpdateActivityCallback;
-            }
-            else
-            {
-                uaHandler = UpdateActivityCallback_NoRety;
-            }
-
-            activityManager.UpdateActivity(activity, uaHandler);
+            activityManager.UpdateActivity(activity, UpdateActivityCallback);
         }
 
         static void UpdateActivityCallback(Discord.Result res)
-        {
-            Console.WriteLine(res);
-            if (res != 0)
-            {
-                Console.WriteLine("retrying activity update");
-                SetPresence(false);
-            }
-        }
-        static void UpdateActivityCallback_NoRety(Discord.Result res)
         {
             Console.WriteLine(res);
         }
