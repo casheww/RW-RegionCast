@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -7,7 +9,8 @@ namespace RCApp
     class Parsing
     {
         static string jsonURL = "https://casheww.github.io/RW-RegionCast/web/customRegions.json";
-        static List<string> supportedCustomRegionCodes = LoadCustomRegions();
+        static List<string> thumbedCustomRegions = LoadCustomRegionThumbnails();
+        static string[] regionPacks = LoadRegionPacks();
 
         static public bool ValidRegion(string code)
         {
@@ -34,7 +37,7 @@ namespace RCApp
 
         static bool ValidCustomRegion(string code)
         {
-            foreach (string r in supportedCustomRegionCodes)
+            foreach (string r in thumbedCustomRegions)
             {
                 if (r == code)
                 {
@@ -44,7 +47,7 @@ namespace RCApp
             return false;
         }
 
-        static List<string> LoadCustomRegions()
+        static List<string> LoadCustomRegionThumbnails()
         {
             Dictionary<string, PackDetails> packs;
             List<string> codes = new List<string>();
@@ -55,7 +58,7 @@ namespace RCApp
             }
             foreach (var pair in packs)
             {
-                System.Console.WriteLine(pair.Value.code);
+                Console.WriteLine(pair.Value.code);
                 codes.Add(pair.Value.code);
             }
             return codes;
@@ -81,5 +84,68 @@ namespace RCApp
 
             return data;
         }
+
+        static string[] LoadRegionPacks()
+        {
+            string CRResourcesPath = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "Mods" +
+                Path.DirectorySeparatorChar + "CustomResources";
+
+            string[] regionPacks;
+            try
+            {
+                regionPacks = Directory.GetDirectories(CRResourcesPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Console.WriteLine("CustomResources dir not found");
+                regionPacks = new string[] { };
+            }
+
+            return regionPacks;
+        }
+
+        static public string ParseRegionName(string regionCode, string origName)
+        {
+            string newName;
+
+            // read replacements from custom region files
+            newName = GetCustomRegionNameOverwrite(regionCode, origName);
+
+            // remove vanilla spoilers
+            newName = newName.Replace("Looks to the Moon", "LttM");
+            newName = newName.Replace("Five Pebbles", "5P");
+
+            return newName;
+        }
+
+        static string GetCustomRegionNameOverwrite(string code, string inputName)
+        {
+            // iterate through regions in each pack
+            foreach (string pack in regionPacks)
+            {
+                string packRegionsPath = pack +
+                        Path.DirectorySeparatorChar + "World" +
+                        Path.DirectorySeparatorChar + "Regions";
+
+                if (Directory.Exists(Path.Combine(packRegionsPath, code)))
+                {
+                    string configPath = Path.Combine(packRegionsPath, code, "RegionCast.txt");
+                    if (File.Exists(configPath))
+                    {
+                        string[] lines = File.ReadAllLines(configPath);
+                        foreach (string l in lines)
+                        {
+                            if (l.StartsWith(inputName))
+                            {
+                                return l.Split(':')[1];
+                            }
+                        }
+                    }
+                }
+            }
+            return inputName;
+        }
+
     }
 }

@@ -131,10 +131,11 @@ namespace RCApp
             {
                 string location = message["location"];
 
-                // remove vanilla spoilers
-                location = location.Replace("Looks to the Moon", "LttM");
-                location = location.Replace("Five Pebbles", "5P");
-
+                if (message.ContainsKey("regioncode"))
+                {
+                    location = Parsing.ParseRegionName(message["regioncode"], location);
+                }
+                
                 activity.Details = location;
 
                 // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
