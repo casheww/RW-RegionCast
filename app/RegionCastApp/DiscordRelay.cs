@@ -23,7 +23,9 @@ namespace RCApp
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
 
-            string configPath = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\config.txt";
+            string configPath = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "config.txt";
             string[] config = File.ReadAllLines(configPath);
 
             bool validPort = int.TryParse(config[0], out int port);
@@ -37,7 +39,9 @@ namespace RCApp
 
         private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
         {
-            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\exception.log";
+            string path = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "exception.log";
             Exception exception = e.ExceptionObject as Exception;
             if (exception is null) { return; }
 
@@ -122,31 +126,43 @@ namespace RCApp
             }
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
-            // set location name and thumbnail
+            // set location name
             if (message.ContainsKey("location"))
             {
-                activity.Details = Parsing.GetRegionName(message["location"]);
+                string location = message["location"];
+
+                if (message.ContainsKey("regioncode"))
+                {
+                    location = Parsing.ParseRegionName(message["regioncode"], location);
+                }
+                
+                activity.Details = location;
 
                 // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
-                if (lastLocation == message["location"])
+                if (lastLocation == location)
                 {
                     return;
                 }
                 else
                 {
-                    lastLocation = message["location"];
+                    lastLocation = location;
                 }
+            }
 
-                // if the location is not a region from the base game, set thumbnail
-                // todo: try to use CRS to get custom region art/names??
-                if (activity.Details == message["location"])
+            // thumbnail and fallback location name
+            if (message.ContainsKey("regioncode"))
+            {
+                string code = message["regioncode"];
+
+                if (Parsing.ValidRegion(code))
                 {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
+                    activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
                 }
                 else
                 {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = message["location"].ToLower() };
+                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
                 }
+
             }
 
             // set playercount if it's not 0 (singleplayer)
@@ -158,10 +174,10 @@ namespace RCApp
                 }
             }
 
-            Console.WriteLine("about to update activity");
+            Console.WriteLine($"about to update activity : {activity.Details}");
             Discord.ActivityManager activityManager = discord.GetActivityManager();
-            Discord.ActivityManager.UpdateActivityHandler uaHandler = UpdateActivityCallback;
-            activityManager.UpdateActivity(activity, uaHandler);
+
+            activityManager.UpdateActivity(activity, UpdateActivityCallback);
         }
 
         static void UpdateActivityCallback(Discord.Result res)

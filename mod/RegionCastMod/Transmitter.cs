@@ -14,7 +14,9 @@ namespace RegionCast
 
         public Transmitter(RegionCast mod)
         {
-            string configPath = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\config.txt";
+            string configPath = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "config.txt";
             string[] config = File.ReadAllLines(configPath);
 
             AttemptToMakeEndpoint(config, mod);
@@ -64,7 +66,7 @@ namespace RegionCast
             }
         }
 
-        public void SendUDP(GameMode gameMode, string location = "", int playerCount = 0)
+        public void SendUDP(GameMode gameMode, string location = "", string regionCode = "", int playerCount = 0)
         {
             /* Sends a UDP message to localhost:49181 where the RegionCastApp should be listening.
              * gameMode : the current game mode 
@@ -74,11 +76,12 @@ namespace RegionCast
             string data = $"rwRegionCastData\n" +
                 $"gamemode:{gameMode}\n" +
                 $"location:{location}\n" +
+                $"regioncode:{regionCode}\n" +
                 $"playercount:{playerCount}";
             byte[] message = Encoding.UTF8.GetBytes(data);
             
             socket.SendTo(message, endpoint);
-            Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RegionCastApp");
+            Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RCApp.exe");
         }
     }
 }

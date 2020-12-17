@@ -25,7 +25,9 @@ namespace RegionCast
         {
             orig(self);
 
-            string path = Directory.GetCurrentDirectory() + @"\RegionCast-DiscordGameSDK\RCApp.exe";
+            string path = Directory.GetCurrentDirectory() +
+                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
+                Path.DirectorySeparatorChar + "RCApp.exe";
             castRecApp = System.Diagnostics.Process.Start(path);
 
             if (castRecApp is null)
@@ -59,12 +61,28 @@ namespace RegionCast
             if (currentTime.Subtract(lastUpdate) < TimeSpan.FromSeconds(5)) { return; }
 
             string currentLocationName;
+            string regionCode = "";
             Transmitter.GameMode gameMode;
 
             if (!(self.room.world.region is null))
             {
+                regionCode = self.room.world.region.name;
+
                 // player is in a region (the region doesn't not exist...)
-                currentLocationName = self.room.world.region.name;
+                int regionNumber = self.room.abstractRoom.subRegion;
+                if (regionNumber == 0)
+                {
+                    regionNumber = 1;
+                }
+
+                try
+                {
+                    currentLocationName = self.room.world.region.subRegions[regionNumber];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    currentLocationName = regionCode;
+                }
 
                 gameMode = Transmitter.GetGameMode(self.slugcatStats.name);
             }
@@ -76,7 +94,7 @@ namespace RegionCast
             }
 
             lastUpdate = currentTime;
-            transmitter.SendUDP(gameMode, currentLocationName);
+            transmitter.SendUDP(gameMode, currentLocationName, regionCode);
         }
     }
 }
