@@ -1,113 +1,68 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace RCApp
 {
     class DiscordRelay
     {
-        static Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
+        // discord
+        static readonly Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
 
+        // mod data cache
         static long startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         static string lastGameMode = "";
         static string lastLocation = "none";
 
-        static bool messageReceived = false;
-        static Dictionary<string, string> message;
+        // paths
+        static readonly string thisDirPath = Path.Combine(Directory.GetCurrentDirectory(), "RegionCast-DiscordGameSDK");
+        static readonly string logPath = Path.Combine(thisDirPath, "exception.log");
+        static readonly string configPath = Path.Combine(thisDirPath, "config.txt");
 
-        static void Main()
+        static async Task Main()
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
+            RCListener.MessageReceived += OnRCMessage;
 
-            string configPath = Directory.GetCurrentDirectory() +
-                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
-                Path.DirectorySeparatorChar + "config.txt";
+            // load config
             string[] config = File.ReadAllLines(configPath);
-
             bool validPort = int.TryParse(config[0], out int port);
             if (!validPort) { return; }
 
-            UdpClient udp = new UdpClient(port);
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
-
-            RunReceiveLoop(udp, endpoint);
+            await Task.WhenAll(StartListener(port), RWCheckLoop());
         }
 
-        private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
+        static async Task StartListener(int port)
         {
-            string path = Directory.GetCurrentDirectory() +
-                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
-                Path.DirectorySeparatorChar + "exception.log";
-            Exception exception = e.ExceptionObject as Exception;
-            if (exception is null) { return; }
-
-            using (StreamWriter sw = File.CreateText(path))
-            {
-                sw.Write(exception.ToString());
-            }            
+            RCListener client = new RCListener(port);
+            await client.Listen();
         }
 
-        static void RunReceiveLoop(UdpClient udp, IPEndPoint endpoint)
+        static async void OnRCMessage(RCListener client, Dictionary<string, string> message)
         {
-            // state to pass to async receiver
-            UdpState state = new UdpState
-            {
-                udp = udp,
-                endpoint = endpoint
-            };
+            SetPresence(message);
 
+            // listen again
+            await client.Listen();
+        }
+
+        static async Task RWCheckLoop()
+        {
             bool rwIsOpen = CheckRWIsOpen();
-            bool lastRunReceivedMessage = false; bool firstRun = true;
             while (rwIsOpen)
             {
-                if (lastRunReceivedMessage || firstRun)
-                {
-                    // start async receiver
-                    udp.BeginReceive(new AsyncCallback(RunReceiver), state);
-                }
-                firstRun = false;
-
-                rwIsOpen = CheckRWIsOpen();
-
-                if (messageReceived)
-                {
-                    SetPresence();
-                    messageReceived = false;
-                    lastRunReceivedMessage = true;
-                }
-                else
-                {
-                    lastRunReceivedMessage = false;
-                }
                 discord.RunCallbacks();
+                await Task.Delay(100);
+                rwIsOpen = CheckRWIsOpen();
             }
 
-            // close
+            // clear presence. app will close once this is done
             discord.GetActivityManager().ClearActivity(UpdateActivityCallback);
         }
 
-        static void RunReceiver(IAsyncResult result)
-        {
-            UdpClient udp = ((UdpState)result.AsyncState).udp;
-            IPEndPoint endpoint = ((UdpState)result.AsyncState).endpoint;
-
-            byte[] bytes = udp.EndReceive(result, ref endpoint);
-            string rawMessage = Encoding.UTF8.GetString(bytes);
-            Console.WriteLine("message receieved from mod");
-
-            if (rawMessage.StartsWith("rwRegionCastData"))
-            {
-                // custom parsing of UDP from mod
-                message = Parsing.ParseUdpMessage(rawMessage);
-                messageReceived = true;
-            }
-        }
-
-        static void SetPresence()
+        static void SetPresence(Dictionary<string, string> message)
         {
             Discord.Activity activity = new Discord.Activity();
             activity.Instance = true;
@@ -174,7 +129,7 @@ namespace RCApp
                 }
             }
 
-            Console.WriteLine($"about to update activity : {activity.Details}");
+            Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
             Discord.ActivityManager activityManager = discord.GetActivityManager();
 
             activityManager.UpdateActivity(activity, UpdateActivityCallback);
@@ -185,12 +140,6 @@ namespace RCApp
             Console.WriteLine(res);
         }
 
-        struct UdpState
-        {
-            public UdpClient udp;
-            public IPEndPoint endpoint;
-        }
-
         static bool CheckRWIsOpen()
         {
             Process[] RWProcesses = Process.GetProcessesByName("RainWorld");
@@ -199,6 +148,17 @@ namespace RCApp
                 return false;
             }
             return true;
+        }
+
+        private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+            if (exception is null) { return; }
+
+            using (StreamWriter sw = File.CreateText(logPath))
+            {
+                sw.Write(exception.ToString());
+            }
         }
     }
 }
