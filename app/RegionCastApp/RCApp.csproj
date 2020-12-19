@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>casheww</Authors>
     <Company />
+    <Version>0.3.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
