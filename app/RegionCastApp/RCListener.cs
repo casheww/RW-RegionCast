@@ -28,22 +28,19 @@ namespace RCApp
             if (rawMessage.StartsWith("rwRegionCastData"))
             {
                 Console.WriteLine("RCListener.Listen : message has correct header");
-
-                // custom parsing of UDP from mod
-                Dictionary<string, string> message = Parsing.ParseUdpMessage(rawMessage);
-                OnMessageReceived(message);
+                OnMessageReceived(rawMessage);
             }
         }
 
-        protected void OnMessageReceived(Dictionary<string, string> message)
+        protected void OnMessageReceived(string raw)
         {
             if (MessageReceived != null)
             {
-                MessageReceived(this, message);
+                MessageReceived(this, raw);
             }
         }
 
-        public delegate void ListenerEventHandler(RCListener client, Dictionary<string, string> message);
+        public delegate void ListenerEventHandler(RCListener client, string rawMessage);
         public static event ListenerEventHandler MessageReceived;
     }
 }

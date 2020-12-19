@@ -34,20 +34,6 @@ namespace RCApp
             await Task.WhenAll(StartListener(port), RWCheckLoop());
         }
 
-        static async Task StartListener(int port)
-        {
-            RCListener client = new RCListener(port);
-            await client.Listen();
-        }
-
-        static async void OnRCMessage(RCListener client, Dictionary<string, string> message)
-        {
-            SetPresence(message);
-
-            // listen again
-            await client.Listen();
-        }
-
         static async Task RWCheckLoop()
         {
             bool rwIsOpen = CheckRWIsOpen();
@@ -62,77 +48,63 @@ namespace RCApp
             discord.GetActivityManager().ClearActivity(UpdateActivityCallback);
         }
 
-        static void SetPresence(Dictionary<string, string> message)
+        static async Task StartListener(int port)
         {
+            RCListener client = new RCListener(port);
+            await client.Listen();
+        }
+
+        static async void OnRCMessage(RCListener client, string rawMessage)
+        {
+            SetPresence(rawMessage);
+
+            // listen again
+            await client.Listen();
+        }
+
+        static void SetPresence(string raw)
+        {
+            Dictionary<string, string> message = Parsing.ParseUdpMessage(raw);
+            
+            if (!Parsing.ValidActivityDict(message))
+            {
+                return;
+            }
+
             Discord.Activity activity = new Discord.Activity();
             activity.Instance = true;
 
-            // set gamemode
-            if (message.ContainsKey("gamemode"))
+            // === game mode ===
+            string mode = message["gamemode"];
+            // if gamemode has changed, reset the start timestamp
+            if (lastGameMode != mode)
             {
-                activity.State = message["gamemode"];
-
-                // if gamemode has changed, reset the start timestamp
-                if (lastGameMode != message["gamemode"])
-                {
-                    startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    lastGameMode = message["gamemode"];
-                }
+                startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                lastGameMode = mode;
             }
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
-            // set location name
-            if (message.ContainsKey("location"))
+            // === location ===
+            string location = message["location"];
+            location = Parsing.ParseRegionName(message["regioncode"], location);
+            activity.Details = location;
+            // only update when necessary
+            if (lastLocation == location) return;
+            else lastLocation = location;
+
+            // === region code ===
+            string regionCode = message["regioncode"];
+            if (Parsing.ValidRegion(regionCode))
             {
-                string location = message["location"];
-
-                if (message.ContainsKey("regioncode"))
-                {
-                    location = Parsing.ParseRegionName(message["regioncode"], location);
-                }
-                
-                activity.Details = location;
-
-                // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
-                if (lastLocation == location)
-                {
-                    return;
-                }
-                else
-                {
-                    lastLocation = location;
-                }
+                activity.Assets = new Discord.ActivityAssets { LargeImage = regionCode.ToLower() };
             }
-
-            // thumbnail and fallback location name
-            if (message.ContainsKey("regioncode"))
+            else
             {
-                string code = message["regioncode"];
-
-                if (Parsing.ValidRegion(code))
-                {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
-                }
-                else
-                {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
-                }
-
-            }
-
-            // set playercount if it's not 0 (singleplayer)
-            if (message.ContainsKey("playercount"))
-            {
-                if (message["playercount"] != "0")
-                {
-                    activity.State += $" ({message["playercount"]} of 4)";
-                }
+                activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
             }
 
             Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
-            Discord.ActivityManager activityManager = discord.GetActivityManager();
-
-            activityManager.UpdateActivity(activity, UpdateActivityCallback);
+            discord.GetActivityManager().UpdateActivity(activity, UpdateActivityCallback);
         }
 
         static void UpdateActivityCallback(Discord.Result res)
