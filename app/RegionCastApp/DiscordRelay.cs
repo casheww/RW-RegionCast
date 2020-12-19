@@ -1,194 +1,115 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace RCApp
 {
     class DiscordRelay
     {
-        static Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
+        // discord
+        static readonly Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
 
+        // mod data cache
         static long startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         static string lastGameMode = "";
         static string lastLocation = "none";
 
-        static bool messageReceived = false;
-        static Dictionary<string, string> message;
+        // paths
+        static readonly string thisDirPath = Path.Combine(Directory.GetCurrentDirectory(), "RegionCast-DiscordGameSDK");
+        static readonly string logPath = Path.Combine(thisDirPath, "exception.log");
+        static readonly string configPath = Path.Combine(thisDirPath, "config.txt");
 
-        static void Main()
+        static async Task Main()
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
+            RCListener.MessageReceived += OnRCMessage;
 
-            string configPath = Directory.GetCurrentDirectory() +
-                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
-                Path.DirectorySeparatorChar + "config.txt";
+            // load config
             string[] config = File.ReadAllLines(configPath);
-
             bool validPort = int.TryParse(config[0], out int port);
             if (!validPort) { return; }
 
-            UdpClient udp = new UdpClient(port);
-            IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
-
-            RunReceiveLoop(udp, endpoint);
+            await Task.WhenAll(StartListener(port), RWCheckLoop());
         }
 
-        private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
+        static async Task RWCheckLoop()
         {
-            string path = Directory.GetCurrentDirectory() +
-                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
-                Path.DirectorySeparatorChar + "exception.log";
-            Exception exception = e.ExceptionObject as Exception;
-            if (exception is null) { return; }
-
-            using (StreamWriter sw = File.CreateText(path))
-            {
-                sw.Write(exception.ToString());
-            }            
-        }
-
-        static void RunReceiveLoop(UdpClient udp, IPEndPoint endpoint)
-        {
-            // state to pass to async receiver
-            UdpState state = new UdpState
-            {
-                udp = udp,
-                endpoint = endpoint
-            };
-
             bool rwIsOpen = CheckRWIsOpen();
-            bool lastRunReceivedMessage = false; bool firstRun = true;
             while (rwIsOpen)
             {
-                if (lastRunReceivedMessage || firstRun)
-                {
-                    // start async receiver
-                    udp.BeginReceive(new AsyncCallback(RunReceiver), state);
-                }
-                firstRun = false;
-
-                rwIsOpen = CheckRWIsOpen();
-
-                if (messageReceived)
-                {
-                    SetPresence();
-                    messageReceived = false;
-                    lastRunReceivedMessage = true;
-                }
-                else
-                {
-                    lastRunReceivedMessage = false;
-                }
                 discord.RunCallbacks();
+                await Task.Delay(100);
+                rwIsOpen = CheckRWIsOpen();
             }
 
-            // close
+            // clear presence. app will close once this is done
             discord.GetActivityManager().ClearActivity(UpdateActivityCallback);
         }
 
-        static void RunReceiver(IAsyncResult result)
+        static async Task StartListener(int port)
         {
-            UdpClient udp = ((UdpState)result.AsyncState).udp;
-            IPEndPoint endpoint = ((UdpState)result.AsyncState).endpoint;
-
-            byte[] bytes = udp.EndReceive(result, ref endpoint);
-            string rawMessage = Encoding.UTF8.GetString(bytes);
-            Console.WriteLine("message receieved from mod");
-
-            if (rawMessage.StartsWith("rwRegionCastData"))
-            {
-                // custom parsing of UDP from mod
-                message = Parsing.ParseUdpMessage(rawMessage);
-                messageReceived = true;
-            }
+            RCListener client = new RCListener(port);
+            await client.Listen();
         }
 
-        static void SetPresence()
+        static async void OnRCMessage(RCListener client, string rawMessage)
         {
+            SetPresence(rawMessage);
+
+            // listen again
+            await client.Listen();
+        }
+
+        static void SetPresence(string raw)
+        {
+            Dictionary<string, string> message = Parsing.ParseUdpMessage(raw);
+            
+            if (!Parsing.ValidActivityDict(message))
+            {
+                return;
+            }
+
             Discord.Activity activity = new Discord.Activity();
             activity.Instance = true;
 
-            // set gamemode
-            if (message.ContainsKey("gamemode"))
+            // === game mode ===
+            string mode = message["gamemode"];
+            // if gamemode has changed, reset the start timestamp
+            if (lastGameMode != mode)
             {
-                activity.State = message["gamemode"];
-
-                // if gamemode has changed, reset the start timestamp
-                if (lastGameMode != message["gamemode"])
-                {
-                    startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    lastGameMode = message["gamemode"];
-                }
+                startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                lastGameMode = mode;
             }
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
-            // set location name
-            if (message.ContainsKey("location"))
+            // === location ===
+            string location = message["location"];
+            location = Parsing.ParseRegionName(message["regioncode"], location);
+            activity.Details = location;
+            // only update when necessary
+            if (lastLocation == location) return;
+            else lastLocation = location;
+
+            // === region code ===
+            string regionCode = message["regioncode"];
+            if (Parsing.ValidRegion(regionCode))
             {
-                string location = message["location"];
-
-                if (message.ContainsKey("regioncode"))
-                {
-                    location = Parsing.ParseRegionName(message["regioncode"], location);
-                }
-                
-                activity.Details = location;
-
-                // only update when necessary. avoids hitting rate limits (5 per 20 seconds) by a lot
-                if (lastLocation == location)
-                {
-                    return;
-                }
-                else
-                {
-                    lastLocation = location;
-                }
+                activity.Assets = new Discord.ActivityAssets { LargeImage = regionCode.ToLower() };
+            }
+            else
+            {
+                activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
             }
 
-            // thumbnail and fallback location name
-            if (message.ContainsKey("regioncode"))
-            {
-                string code = message["regioncode"];
-
-                if (Parsing.ValidRegion(code))
-                {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = code.ToLower() };
-                }
-                else
-                {
-                    activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
-                }
-
-            }
-
-            // set playercount if it's not 0 (singleplayer)
-            if (message.ContainsKey("playercount"))
-            {
-                if (message["playercount"] != "0")
-                {
-                    activity.State += $" ({message["playercount"]} of 4)";
-                }
-            }
-
-            Console.WriteLine($"about to update activity : {activity.Details}");
-            Discord.ActivityManager activityManager = discord.GetActivityManager();
-
-            activityManager.UpdateActivity(activity, UpdateActivityCallback);
+            Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
+            discord.GetActivityManager().UpdateActivity(activity, UpdateActivityCallback);
         }
 
         static void UpdateActivityCallback(Discord.Result res)
         {
             Console.WriteLine(res);
-        }
-
-        struct UdpState
-        {
-            public UdpClient udp;
-            public IPEndPoint endpoint;
         }
 
         static bool CheckRWIsOpen()
@@ -199,6 +120,17 @@ namespace RCApp
                 return false;
             }
             return true;
+        }
+
+        private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+            if (exception is null) { return; }
+
+            using (StreamWriter sw = File.CreateText(logPath))
+            {
+                sw.Write(exception.ToString());
+            }
         }
     }
 }

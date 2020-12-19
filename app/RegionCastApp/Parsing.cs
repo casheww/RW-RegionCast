@@ -85,6 +85,23 @@ namespace RCApp
             return data;
         }
 
+        static readonly string[] messageKeys =
+        {
+            "gamemode", "location", "regioncode", "playercount"
+        };
+
+        static public bool ValidActivityDict(Dictionary<string, string> dict)
+        {
+            foreach (string key in messageKeys)
+            {
+                if (!dict.ContainsKey(key))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         static string[] LoadRegionPacks()
         {
             string CRResourcesPath = Directory.GetCurrentDirectory() +
