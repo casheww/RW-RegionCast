@@ -93,8 +93,10 @@ namespace RegionCast
                 gameMode = Transmitter.GameMode.Arena;
             }
 
+            int playerCount = self.room.game.Players.Count;
+
             lastUpdate = currentTime;
-            transmitter.SendUDP(gameMode, currentLocationName, regionCode);
+            transmitter.SendUDP(gameMode, currentLocationName, regionCode, playerCount);
         }
     }
 }
