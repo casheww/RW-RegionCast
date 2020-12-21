@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RegionCast
 {
-    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.3.0")]
+    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.3.1")]
     public class RegionCast : BaseUnityPlugin
     {
         System.Diagnostics.Process castRecApp = null;
