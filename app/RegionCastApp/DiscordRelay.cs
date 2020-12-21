@@ -82,6 +82,7 @@ namespace RCApp
                 startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 lastGameMode = mode;
             }
+            activity.State = mode;
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
             // === location ===
@@ -101,6 +102,14 @@ namespace RCApp
             else
             {
                 activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
+            }
+
+            if (int.TryParse(message["playercount"], out int playerCount))
+            {
+                if (playerCount > 1)
+                {
+                    activity.State += $" ({playerCount} players)";
+                }
             }
 
             Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
