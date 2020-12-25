@@ -12,12 +12,21 @@ namespace RegionCast
         DateTime lastUpdate = DateTime.Now;
         Transmitter transmitter;
 
+        public string GameMode { get; set; }
+
         public RegionCast()
         {
             transmitter = new Transmitter(this);
+
+            AddGameHooks();
+        }
+
+        void AddGameHooks()
+        {
             On.RainWorld.Start += RainWorld_Start;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             On.RainWorldGame.ExitToMenu += RainWorldGame_ExitToMenu;
+            On.Menu.SlugcatSelectMenu.Singal += SlugMenu_Signal;
             On.Player.Update += Player_Update;
         }
 
@@ -43,13 +52,22 @@ namespace RegionCast
         void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
             orig(self, manager, showRegionSpecificBkg);
-            transmitter.SendUDP(Transmitter.GameMode.Menu);
+            transmitter.SendUDP("Menu");
         }
 
         void RainWorldGame_ExitToMenu(On.RainWorldGame.orig_ExitToMenu orig, RainWorldGame self)
         {
             orig(self);
-            transmitter.SendUDP(Transmitter.GameMode.Menu);
+            transmitter.SendUDP("Menu");
+        }
+
+        void SlugMenu_Signal(On.Menu.SlugcatSelectMenu.orig_Singal orig, Menu.SlugcatSelectMenu self, Menu.MenuObject sender, string message)
+        {
+            orig(self, sender, message);
+            if (message == "START")
+            {
+                GameMode = Utils.GetSlugName(self.slugcatPages[self.slugcatPageIndex].colorName);
+            }
         }
 
         void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
@@ -62,7 +80,6 @@ namespace RegionCast
 
             string currentLocationName;
             string regionCode = "";
-            Transmitter.GameMode gameMode;
 
             if (!(self.room.world.region is null))
             {
@@ -83,20 +100,18 @@ namespace RegionCast
                 {
                     currentLocationName = regionCode;
                 }
-
-                gameMode = Transmitter.GetGameMode(self.slugcatStats.name);
             }
             else
             {
                 // player is not in a region. This probably means they're in arena/sandbox mode
                 currentLocationName = self.room.roomSettings.name;
-                gameMode = Transmitter.GameMode.Arena;
+                GameMode = "Arena";
             }
 
             int playerCount = self.room.game.Players.Count;
 
             lastUpdate = currentTime;
-            transmitter.SendUDP(gameMode, currentLocationName, regionCode, playerCount);
+            transmitter.SendUDP(GameMode, currentLocationName, regionCode, playerCount);
         }
     }
 }

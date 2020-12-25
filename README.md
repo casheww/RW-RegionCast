@@ -33,6 +33,7 @@ Any issues? You can reach me in the modding channels of the [Rain World Discord]
 ---
 
 \* For more details about region pack support, see [this  website](https://casheww.github.io/RW-RegionCast/).
+For custom slugcat info, see [the slugcat page on the wiki](https://github.com/casheww/RW-RegionCast/wiki/Custom-Slugcats).
 
 For people looking to clone and build themselves, you'll need to download the Discord Game SDK from [here](https://discord.com/developers/docs/game-sdk/sdk-starter-guide). Add the files from the `csharp` dir of the SDK source to `app/RegionCastApp/`, modify `Core.cs` as shown [here](https://github.com/discord/gamesdk-and-dispatch/issues/102#issuecomment-702414654). You may be able to get away with just adding Core, Constants, and ActivityManager, but I haven't tested this. I've also removed one of the csproj files for path reasons, so you probably want to make your own project and copy in the files.
 
