@@ -40,33 +40,7 @@ namespace RegionCast
             endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
         }
 
-        public enum GameMode
-        {
-            Menu,
-            Monk,
-            Survivor,
-            Hunter,
-            Arena
-            // todo: co-op compat?
-        }
-
-        public static GameMode GetGameMode(SlugcatStats.Name difficulty)
-        {
-            switch (difficulty)
-            {
-                case SlugcatStats.Name.Yellow:
-                    return GameMode.Monk;
-
-                default:
-                case SlugcatStats.Name.White:
-                    return GameMode.Survivor;
-
-                case SlugcatStats.Name.Red:
-                    return GameMode.Hunter;
-            }
-        }
-
-        public void SendUDP(GameMode gameMode, string location = "", string regionCode = "", int playerCount = 0)
+        public void SendUDP(string gameMode, string location = "", string regionCode = "", int playerCount = 0)
         {
             /* Sends a UDP message to localhost:49181 where the RegionCastApp should be listening.
              * gameMode : the current game mode 
