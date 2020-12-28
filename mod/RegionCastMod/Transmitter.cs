@@ -44,8 +44,7 @@ namespace RegionCast
         {
             /* Sends a UDP message to localhost:49181 where the RegionCastApp should be listening.
              * gameMode : the current game mode 
-             * location : code of current region / name of current arena
-             * playerCount : may be used in future for extra compat features with Jolly Coop / Monkland */
+             * location : code of current region / name of current arena */
 
             string data = $"rwRegionCastData\n" +
                 $"gamemode:{gameMode}\n" +
