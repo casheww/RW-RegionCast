@@ -40,7 +40,7 @@ namespace RCApp
             while (rwIsOpen)
             {
                 discord.RunCallbacks();
-                await Task.Delay(100);
+                await Task.Delay(250);
                 rwIsOpen = CheckRWIsOpen();
             }
 
