@@ -66,7 +66,7 @@ namespace RCApp
         {
             Dictionary<string, string> message = Parsing.ParseUdpMessage(raw);
             
-            if (!Parsing.ValidActivityDict(message))
+            if (!Parsing.ValidateActivityDict(message))
             {
                 return;
             }

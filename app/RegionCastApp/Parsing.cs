@@ -90,7 +90,7 @@ namespace RCApp
             "gamemode", "location", "regioncode", "playercount"
         };
 
-        static public bool ValidActivityDict(Dictionary<string, string> dict)
+        static public bool ValidateActivityDict(Dictionary<string, string> dict)
         {
             foreach (string key in messageKeys)
             {
