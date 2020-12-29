@@ -26,6 +26,8 @@ Displays the following game details on your Discord profile for other users to s
 
 Your antivirus may not like a certain `RCApp.exe` on the first run. This is to do with Rain World and the Discord Game SDK targetting different .NET versions, meaning the part of the mod that interacts with Discord needs to be run separately.
 
+If you do not have .NET Core 3.1 installed, you will need to install it. Instructions for checking your .NET versions can be found [here](https://docs.microsoft.com/en-us/dotnet/core/install/how-to-detect-installed-versions?pivots=os-windows#check-runtime-versions), and if you don't have a .NET Core 3.1.x version, you can find installation links for Windows, Mac, and Linux [a little further down on that page](https://docs.microsoft.com/en-us/dotnet/core/install/how-to-detect-installed-versions?pivots=os-windows#next-steps).
+
 It should go without saying that Discord needs to be running on the same machine for this to work. You also need to enable the toggle switch in Discord settings > Game Activity.
 
 Any issues? You can reach me in the modding channels of the [Rain World Discord](https://discord.gg/rainworld) (casheww) or by submitting a Github issue on this repository under the Issues tab.
