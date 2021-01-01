@@ -8,17 +8,25 @@ namespace RegionCast
     [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.3.1")]
     public class RegionCast : BaseUnityPlugin
     {
+        static RegionCast instance;
         System.Diagnostics.Process castRecApp = null;
         DateTime lastUpdate = DateTime.Now;
         Transmitter transmitter;
 
         public RegionCast()
         {
+            instance = this;
             transmitter = new Transmitter(this);
+
             On.RainWorld.Start += RainWorld_Start;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             On.RainWorldGame.ExitToMenu += RainWorldGame_ExitToMenu;
             On.Player.Update += Player_Update;
+        }
+
+        public static OptionalUI.OptionInterface LoadOI()
+        {
+            return new ConfigMenu(instance);
         }
 
         void RainWorld_Start(On.RainWorld.orig_Start orig, RainWorld self)
