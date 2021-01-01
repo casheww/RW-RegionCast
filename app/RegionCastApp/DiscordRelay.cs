@@ -21,6 +21,9 @@ namespace RCApp
         static readonly string logPath = Path.Combine(thisDirPath, "exception.log");
         static readonly string configPath = Path.Combine(thisDirPath, "config.txt");
 
+        static Discord.ActivityManager.UpdateActivityHandler uaHandler = ActivityCallback;
+        static Discord.ActivityManager.ClearActivityHandler caHandler = ActivityCallback;
+
         static async Task Main()
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
@@ -45,7 +48,7 @@ namespace RCApp
             }
 
             // clear presence. app will close once this is done
-            discord.GetActivityManager().ClearActivity(UpdateActivityCallback);
+            discord.GetActivityManager().ClearActivity(caHandler);
         }
 
         static async Task StartListener(int port)
@@ -71,13 +74,20 @@ namespace RCApp
                 return;
             }
 
-            Discord.Activity activity = new Discord.Activity();
-            activity.Instance = true;
+            Discord.Activity activity = new Discord.Activity { Instance = true };
 
-            // === game mode ===
             string mode = message["gamemode"];
-            // if gamemode has changed, reset the start timestamp
-            if (lastGameMode != mode)
+            string location = message["location"];
+            string regionCode = message["regioncode"];
+
+            if (lastLocation == location && mode == lastGameMode)
+            {
+                return;
+            }
+            else lastLocation = location;
+
+            // if gamemode has changed (and neither before nor after is "Dead"), reset the start timestamp
+            if (lastGameMode != mode && lastGameMode != "Dead" && mode != "Dead")
             {
                 startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 lastGameMode = mode;
@@ -85,25 +95,38 @@ namespace RCApp
             activity.State = mode;
             activity.Timestamps = new Discord.ActivityTimestamps { Start = startTimestamp };
 
-            // === location ===
-            string location = message["location"];
+            // set location
             location = Parsing.ParseRegionName(message["regioncode"], location);
             activity.Details = location;
-            // only update when necessary
-            if (lastLocation == location) return;
-            else lastLocation = location;
 
-            // === region code ===
-            string regionCode = message["regioncode"];
+            // set thumbnail            
+            string largeImage;
             if (Parsing.ValidRegion(regionCode))
             {
-                activity.Assets = new Discord.ActivityAssets { LargeImage = regionCode.ToLower() };
+                largeImage = regionCode.ToLower();
             }
             else
             {
-                activity.Assets = new Discord.ActivityAssets { LargeImage = "slugcat" };
-            }
+                Dictionary<string, string> imageKeys = new Dictionary<string, string>
+                {
+                    { "Dreaming", "dreaming" },
+                    { "Sleeping", "dreaming" },
+                    { "Dead", "death" }
+                };
 
+                if (imageKeys.ContainsKey(mode))
+                {
+                    largeImage = imageKeys[mode];
+                }
+                else
+                {
+                    largeImage = "slugcat";
+                }
+                
+            }
+            activity.Assets = new Discord.ActivityAssets { LargeImage = largeImage };
+            
+            // append player count to game mode
             if (int.TryParse(message["playercount"], out int playerCount))
             {
                 if (playerCount > 1)
@@ -113,10 +136,10 @@ namespace RCApp
             }
 
             Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
-            discord.GetActivityManager().UpdateActivity(activity, UpdateActivityCallback);
+            discord.GetActivityManager().UpdateActivity(activity, uaHandler);
         }
 
-        static void UpdateActivityCallback(Discord.Result res)
+        static void ActivityCallback(Discord.Result res)
         {
             Console.WriteLine(res);
         }
