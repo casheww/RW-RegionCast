@@ -20,9 +20,10 @@ Displays the following game details on your Discord profile for other users to s
 `.` in file paths represents the Rain World root directory.
 
 1) You must have Rain World BepInEx installed and set up - this won't run on Partiality.   [BepInEx download](https://drive.google.com/file/d/1WcCCsS3ABBdO1aX-iJGeqeE07YE4Qv88/view) | [RW BepInEx tutorial](https://youtu.be/brDN_8uN6-U)
-2) Download the first .zip from the first "Assets" dropdown from [here](https://github.com/casheww/RW-RegionCast/releases/)
-3) Extract `RegionCast.dll` to `./BepInEx/plugins`
-4) Extract the `RegionCast-DiscordGameSDK` folder to the Rain World root directory
+2) As of RegionCast 0.5, this plugin depends on Config Machine. Please see the release page for a note on this.
+3) Download the first .zip from the first "Assets" dropdown from [here](https://github.com/casheww/RW-RegionCast/releases/)
+4) Extract `RegionCast.dll` to `./BepInEx/plugins`
+5) Extract the `RegionCast-DiscordGameSDK` folder to the Rain World root directory
 
 Your antivirus may not like a certain `RCApp.exe` on the first run. This is to do with Rain World and the Discord Game SDK targetting different .NET versions, meaning the part of the mod that interacts with Discord needs to be run separately.
 
