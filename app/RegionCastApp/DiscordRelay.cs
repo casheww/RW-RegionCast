@@ -125,15 +125,6 @@ namespace RCApp
                 
             }
             activity.Assets = new Discord.ActivityAssets { LargeImage = largeImage };
-            
-            // append player count to game mode
-            if (int.TryParse(message["playercount"], out int playerCount))
-            {
-                if (playerCount > 1)
-                {
-                    activity.State += $" ({playerCount} players)";
-                }
-            }
 
             Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
             discord.GetActivityManager().UpdateActivity(activity, uaHandler);

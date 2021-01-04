@@ -5,20 +5,29 @@ using UnityEngine;
 
 namespace RegionCast
 {
-    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.4.0")]
+    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.5.0")]
     public class RegionCast : BaseUnityPlugin
     {
         System.Diagnostics.Process castRecApp = null;
         DateTime lastUpdate = DateTime.Now;
         Transmitter transmitter;
+        public static RegionCast instance { get; private set; }      // used for config machine
 
-        public string slugName { get; set; }
+        public static string SlugName { get; private set; }
+        public static int CycleNumber { get; private set; }
+        public static int PlayerCount { get; private set; }
 
         public RegionCast()
         {
             transmitter = new Transmitter(this);
+            instance = this;
 
             AddGameHooks();
+        }
+
+        public static OptionalUI.OptionInterface LoadOI()
+        {
+            return new ConfigMenu();
         }
 
         void AddGameHooks()
@@ -77,7 +86,7 @@ namespace RegionCast
             orig(self, sender, message);
             if (message == "START")
             {
-                slugName = Utils.GetSlugName(self.slugcatPages[self.slugcatPageIndex].colorName);
+                SlugName = Utils.GetSlugName(self.slugcatPages[self.slugcatPageIndex].colorName);
             }
         }
 
@@ -122,21 +131,22 @@ namespace RegionCast
             {
                 // player is not in a region. This probably means they're in arena/sandbox mode
                 currentLocationName = self.room.roomSettings.name;
-                slugName = "Arena";
+                SlugName = "Arena";
             }
 
-            int playerCount = self.room.game.Players.Count;
-
-            if (slugName.StartsWith("Hunter"))
+            StoryGameSession session = self.room.world.game.session as StoryGameSession;
+            int cycleNumber = session.saveState.cycleNumber;
+            if (SlugName == "Hunter")
             {
-                StoryGameSession session = self.room.world.game.session as StoryGameSession;
-                int hunterCycleNumber = 19 - session.saveState.cycleNumber;
-                if (session.saveState.redExtraCycles) hunterCycleNumber += 5;
-                slugName = $"Hunter (cycle {hunterCycleNumber})";
+                cycleNumber = 19 - cycleNumber;
+                if (session.saveState.redExtraCycles) cycleNumber += 5;
             }
+            CycleNumber = cycleNumber;
+
+            PlayerCount = self.room.game.Players.Count;
 
             lastUpdate = currentTime;
-            transmitter.SendUDP(slugName, currentLocationName, regionCode, playerCount);
+            transmitter.SendUDP(SlugName, currentLocationName, regionCode);
         }
 
         void SleepHook(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)

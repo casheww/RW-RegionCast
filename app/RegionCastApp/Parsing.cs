@@ -87,7 +87,7 @@ namespace RCApp
 
         static readonly string[] messageKeys =
         {
-            "gamemode", "location", "regioncode", "playercount"
+            "gamemode", "location", "regioncode"
         };
 
         static public bool ValidateActivityDict(Dictionary<string, string> dict)
