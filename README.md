@@ -1,6 +1,9 @@
 # Rain World - RegionCast
 A BepInEx plugin for Rain World that adds Discord Rich Presence, now with support for region pack mods* !
 
+![GitHub all releases](https://img.shields.io/github/downloads/casheww/RW-RegionCast/total?color=7185a8&style=for-the-badge)
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/casheww/RW-RegionCast?color=233f70&label=latest&style=for-the-badge)
+
 ![regioncast demo](https://github.com/casheww/RW-RegionCast/blob/main/assets/regioncastdemo.png)
 
 [Skip to download instructions](https://github.com/casheww/RW-RegionCast#installation)
