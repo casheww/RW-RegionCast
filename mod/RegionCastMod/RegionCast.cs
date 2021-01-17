@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RegionCast
 {
-    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.5.0")]
+    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.5.1")]
     public class RegionCast : BaseUnityPlugin
     {
         System.Diagnostics.Process castRecApp = null;
@@ -126,6 +126,15 @@ namespace RegionCast
                 {
                     currentLocationName = regionCode;
                 }
+
+                StoryGameSession session = self.room.world.game.session as StoryGameSession;
+                int cycleNumber = session.saveState.cycleNumber;
+                if (SlugName == "Hunter")
+                {
+                    cycleNumber = 19 - cycleNumber;
+                    if (session.saveState.redExtraCycles) cycleNumber += 5;
+                }
+                CycleNumber = cycleNumber;
             }
             else
             {
@@ -133,15 +142,6 @@ namespace RegionCast
                 currentLocationName = self.room.roomSettings.name;
                 SlugName = "Arena";
             }
-
-            StoryGameSession session = self.room.world.game.session as StoryGameSession;
-            int cycleNumber = session.saveState.cycleNumber;
-            if (SlugName == "Hunter")
-            {
-                cycleNumber = 19 - cycleNumber;
-                if (session.saveState.redExtraCycles) cycleNumber += 5;
-            }
-            CycleNumber = cycleNumber;
 
             PlayerCount = self.room.game.Players.Count;
 
