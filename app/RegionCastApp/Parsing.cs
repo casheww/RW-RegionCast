@@ -56,11 +56,13 @@ namespace RCApp
                 string jsonData = client.DownloadString(jsonURL);
                 packs = JsonConvert.DeserializeObject<Dictionary<string, PackDetails>>(jsonData);
             }
+            string logStr = "Region packs with custom thumbnail support:\n";
             foreach (var pair in packs)
             {
-                Console.WriteLine(pair.Value.code);
                 codes.Add(pair.Value.code);
+                logStr += $"{pair.Key} : {pair.Value.code} : {pair.Value.url}\n";
             }
+            DiscordRelay.Log(logStr);
             return codes;
         }
 

@@ -10,6 +10,9 @@ namespace RCApp
     {
         // discord
         static readonly Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
+        static object discordLock = new object();
+        static Discord.ActivityManager.ClearActivityHandler clearHandler = (res) => { Console.WriteLine(res); };
+        static Discord.ActivityManager.UpdateActivityHandler updateHandler = (res) => { Console.WriteLine(res); };
 
         // mod data cache
         static long startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -150,10 +153,16 @@ namespace RCApp
             Exception exception = e.ExceptionObject as Exception;
             if (exception is null) { return; }
 
-            using (StreamWriter sw = File.CreateText(logPath))
-            {
-                sw.Write(exception.ToString());
-            }
+            StreamWriter sw = File.AppendText(exceptionLogPath);
+            sw.Write(exception.ToString() + "\n\n");
+            sw.Close();
+        }
+
+        public static void Log(object message)
+        {
+            StreamWriter sw = File.AppendText(logPath);
+            sw.Write(message.ToString() + "\n");
+            sw.Close();
         }
     }
 }
