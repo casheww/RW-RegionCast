@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RCApp
@@ -21,57 +22,97 @@ namespace RCApp
 
         // paths
         static readonly string thisDirPath = Path.Combine(Directory.GetCurrentDirectory(), "RegionCast-DiscordGameSDK");
-        static readonly string logPath = Path.Combine(thisDirPath, "exception.log");
+        static readonly string exceptionLogPath = Path.Combine(thisDirPath, "eLog.txt");
+        static readonly string logPath = Path.Combine(thisDirPath, "log.txt");
         static readonly string configPath = Path.Combine(thisDirPath, "config.txt");
 
-        static Discord.ActivityManager.UpdateActivityHandler uaHandler = ActivityCallback;
-        static Discord.ActivityManager.ClearActivityHandler caHandler = ActivityCallback;
-
-        static async Task Main()
+        static void Main()
         {
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
             RCListener.MessageReceived += OnRCMessage;
 
+            // set log files
+            File.WriteAllText(exceptionLogPath, "");
+            File.WriteAllText(logPath, "");
+            Log("Starting RegionCast sideapp\nWelcome to modders and the curious...\n");
+
             // load config
             string[] config = File.ReadAllLines(configPath);
             bool validPort = int.TryParse(config[0], out int port);
-            if (!validPort) { return; }
+            Log($"Port : {port}");
+            if (!validPort) return;
 
-            await Task.WhenAll(StartListener(port), RWCheckLoop());
+            RunThreads(port);
+
+            Log("Exit, persued by bear");
         }
 
-        static async Task RWCheckLoop()
+        static void RunThreads(int port)
         {
-            bool rwIsOpen = CheckRWIsOpen();
-            while (rwIsOpen)
-            {
-                discord.RunCallbacks();
-                await Task.Delay(250);
-                rwIsOpen = CheckRWIsOpen();
-            }
+            Thread rwCheckThread = new Thread(new ThreadStart(RWCheckLoop));
+            rwCheckThread.Start();
 
-            // clear presence. app will close once this is done
-            discord.GetActivityManager().ClearActivity(caHandler);
+            Thread listenerThread = new Thread(() => StartListener(port));
+            listenerThread.Start();
+
+            rwCheckThread.Join();
+            listenerThread.Abort(1);
+
+            lock (discordLock)
+            {
+                discord.GetActivityManager().ClearActivity(clearHandler);
+            }
         }
 
-        static async Task StartListener(int port)
+        static void RWCheckLoop()
+        {
+            bool rwIsOpen;
+            do
+            {
+                try
+                {
+                    lock (discordLock)
+                    {
+                        discord.RunCallbacks();
+                    }
+                }
+                catch (NullReferenceException) { Console.WriteLine("Discord threw nullref"); }
+                
+                Thread.Sleep(500);
+                rwIsOpen = CheckRWIsOpen();
+            } while (rwIsOpen);
+            
+            Log("Rain World closed - self-destruct in T minus a very small time...");
+        }
+
+        static bool CheckRWIsOpen()
+        {
+            Process[] RWProcesses = Process.GetProcessesByName("RainWorld");
+            if (RWProcesses.Length < 1)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        static void StartListener(int port)
         {
             RCListener client = new RCListener(port);
-            await client.Listen();
+            client.Listen();
         }
 
-        static async void OnRCMessage(RCListener client, string rawMessage)
+        static void OnRCMessage(RCListener client, string rawMessage)
         {
             SetPresence(rawMessage);
 
             // listen again
-            await client.Listen();
+            client.Listen();
         }
 
         static void SetPresence(string raw)
         {
             Dictionary<string, string> message = Parsing.ParseUdpMessage(raw);
-            
+
             if (!Parsing.ValidateActivityDict(message))
             {
                 return;
@@ -125,27 +166,15 @@ namespace RCApp
                 {
                     largeImage = "slugcat";
                 }
-                
+
             }
             activity.Assets = new Discord.ActivityAssets { LargeImage = largeImage };
 
             Console.WriteLine($"DiscordRelay.SetPresence : about to update activity : {activity.Details}");
-            discord.GetActivityManager().UpdateActivity(activity, uaHandler);
-        }
-
-        static void ActivityCallback(Discord.Result res)
-        {
-            Console.WriteLine(res);
-        }
-
-        static bool CheckRWIsOpen()
-        {
-            Process[] RWProcesses = Process.GetProcessesByName("RainWorld");
-            if (RWProcesses.Length < 1)
+            lock (discordLock)
             {
-                return false;
+                discord.GetActivityManager().UpdateActivity(activity, updateHandler);
             }
-            return true;
         }
 
         private static void ExceptionLogger(object sender, UnhandledExceptionEventArgs e)

@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RCApp
 {
@@ -17,10 +16,10 @@ namespace RCApp
             udp = new UdpClient(endpoint);
         }
 
-        public async Task Listen()
+        public void Listen()
         {
             Console.WriteLine("RCListener.Listen : waiting for message");
-            byte[] bytes = (await udp.ReceiveAsync()).Buffer;
+            byte[] bytes = udp.Receive(ref endpoint);
             Console.WriteLine("RCListener.Listen : ye got mail!");
             string rawMessage = Encoding.UTF8.GetString(bytes);
 

@@ -5,8 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>casheww</Authors>
     <Company />
-    <Version>0.5</Version>
-    <Copyright>Copyright © casheww 2020</Copyright>
+    <Version>0.5.2</Version>
+    <Copyright>Copyright © casheww 2021</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
