@@ -18,9 +18,9 @@ if __name__ == "__main__":
 
     # read & hash sideapp exe from zip download
     with ZipFile(zip_buffer) as z:
-        exe_bytes = z.read("RegionCast-DiscordGameSDK/RCApp.exe")
+        exe_bytes = z.read("RegionCast-DiscordGameSDK/RCApp.dll")
     new_hash = hashlib.md5(exe_bytes)
     print(new_hash.hexdigest())
 
-    with open("exe-hash", "w+") as f:
+    with open("sideapp-hash", "w+") as f:
         f.write(new_hash.hexdigest())
