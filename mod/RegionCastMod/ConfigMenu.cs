@@ -6,7 +6,7 @@ namespace RegionCast
 {
     class ConfigMenu : OptionInterface
     {
-        public ConfigMenu() : base(plugin: RegionCast.instance)
+        public ConfigMenu() : base(plugin: RegionCast.Instance)
         {
             
         }
@@ -17,9 +17,9 @@ namespace RegionCast
             Tabs = new OpTab[1];
             Tabs[0] = new OpTab("RichPresence");
 
-            string modName = RegionCast.instance.Info.Metadata.Name;
-            string modVrsn = RegionCast.instance.Info.Metadata.Version.ToString();
-            string modAuth = RegionCast.instance.Info.Metadata.GUID.Split('.')[0];
+            string modName = RegionCast.Instance.Info.Metadata.Name;
+            string modVrsn = RegionCast.Instance.Info.Metadata.Version.ToString();
+            string modAuth = RegionCast.Instance.Info.Metadata.GUID.Split('.')[0];
 
             Tabs[0].AddItems(new UIelement[]
             {
