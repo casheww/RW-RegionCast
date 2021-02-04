@@ -11,7 +11,7 @@ namespace RegionCast
         System.Diagnostics.Process castRecApp = null;
         DateTime lastUpdate = DateTime.Now;
         Transmitter transmitter;
-        public static RegionCast instance { get; private set; }      // used for config machine
+        public static RegionCast Instance { get; private set; }      // used for config machine
 
         public static string SlugName { get; private set; }
         public static int CycleNumber { get; private set; }
@@ -20,7 +20,7 @@ namespace RegionCast
         public RegionCast()
         {
             transmitter = new Transmitter(this);
-            instance = this;
+            Instance = this;
 
             AddGameHooks();
         }
