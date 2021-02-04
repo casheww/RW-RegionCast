@@ -1,0 +1,23 @@
+name: exe-hash-workflow
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  exe-hash-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: generate exe hash
+        working-directory: .
+        run: |
+          python3 ./.github/workflows/hasher.py
+          
+      - name: commit changes
+        uses: EndBug/add-and-commit@v6
+        with:
+          message: 'Automatically generated exe hash (GitHub Action)'
+          add: pages
