@@ -7,12 +7,12 @@ using UnityEngine;
 
 namespace RegionCast
 {
-    class Transmitter
+    public class Transmitter
     {
         static readonly Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         IPEndPoint endpoint;
 
-        public Transmitter(RegionCast mod)
+        public Transmitter(RegionCastPlugin mod)
         {
             string configPath = Directory.GetCurrentDirectory() +
                 Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
@@ -22,7 +22,7 @@ namespace RegionCast
             AttemptToMakeEndpoint(config, mod);
         }
 
-        void AttemptToMakeEndpoint(string[] config, RegionCast mod)
+        void AttemptToMakeEndpoint(string[] config, RegionCastPlugin mod)
         {
             int port;
             try
@@ -33,7 +33,7 @@ namespace RegionCast
             {
                 Debug.LogError("RegionCast : first line of RegionCast-DiscordGameSDK\\config.txt " +
                     "(port number) could not be formatted to an int.");
-                UnityEngine.Object.Destroy(mod.GetComponent<RegionCast>());
+                UnityEngine.Object.Destroy(mod.GetComponent<RegionCastPlugin>());
                 return;
             }
 

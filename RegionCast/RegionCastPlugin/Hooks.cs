@@ -1,39 +1,17 @@
 ﻿using System;
-using System.IO;
-using BepInEx;
-using UnityEngine;
 
 namespace RegionCast
 {
-    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.5.1")]
-    public class RegionCast : BaseUnityPlugin
+    class Hooks
     {
-        System.Diagnostics.Process castRecApp = null;
-        DateTime lastUpdate = DateTime.Now;
-        Transmitter transmitter;
-        public static RegionCast Instance { get; private set; }      // used for config machine
-
         public static string SlugName { get; private set; }
         public static int CycleNumber { get; private set; }
         public static int PlayerCount { get; private set; }
+        static DateTime lastUpdate = DateTime.Now;
 
-        public RegionCast()
+
+        public static void Apply()
         {
-            transmitter = new Transmitter(this);
-            Instance = this;
-
-            AddGameHooks();
-        }
-
-        public static OptionalUI.OptionInterface LoadOI()
-        {
-            return new ConfigMenu();
-        }
-
-        void AddGameHooks()
-        {
-            On.RainWorld.Start += RwStartHook;
-
             // menu
             On.Menu.MainMenu.ctor += MainMenuHook;
             On.RainWorldGame.ExitToMenu += ExitToMenuHook;
@@ -50,38 +28,19 @@ namespace RegionCast
             On.RainWorldGame.GameOver += GameOverHook;
         }
 
-        void RwStartHook(On.RainWorld.orig_Start orig, RainWorld self)
-        {
-            orig(self);
-
-            string path = Directory.GetCurrentDirectory() +
-                Path.DirectorySeparatorChar + "RegionCast-DiscordGameSDK" +
-                Path.DirectorySeparatorChar + "RCApp.exe";
-            castRecApp = System.Diagnostics.Process.Start(path);
-
-            if (castRecApp is null)
-            {
-                Debug.LogError("RegionCast : RegionCastApp.exe was not found!\n" +
-                    "\tMake sure the DiscordGameSDK was placed in the Rain World root directory " +
-                    "i.e. next to the `Rain World.exe`. Always read the README ;)\n");
-                Destroy(GetComponent<RegionCast>());
-                return;
-            }
-        }
-        
-        void MainMenuHook(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
+        static void MainMenuHook(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
             orig(self, manager, showRegionSpecificBkg);
-            transmitter.SendUDP("Menu");
+            RegionCastPlugin.Instance.Transmitter.SendUDP("Menu");
         }
 
-        void ExitToMenuHook(On.RainWorldGame.orig_ExitToMenu orig, RainWorldGame self)
+        static void ExitToMenuHook(On.RainWorldGame.orig_ExitToMenu orig, RainWorldGame self)
         {
             orig(self);
-            transmitter.SendUDP("Menu");
+            RegionCastPlugin.Instance.Transmitter.SendUDP("Menu");
         }
 
-        void SlugMenuSignalHook(On.Menu.SlugcatSelectMenu.orig_Singal orig, Menu.SlugcatSelectMenu self, Menu.MenuObject sender, string message)
+        static void SlugMenuSignalHook(On.Menu.SlugcatSelectMenu.orig_Singal orig, Menu.SlugcatSelectMenu self, Menu.MenuObject sender, string message)
         {
             orig(self, sender, message);
             if (message == "START")
@@ -90,13 +49,13 @@ namespace RegionCast
             }
         }
 
-        void PlayerUpdateHook(On.Player.orig_Update orig, Player self, bool eu)
+        static void PlayerUpdateHook(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig(self, eu);
 
             if (self.dead)
             {
-                transmitter.SendUDP("Dead");
+                RegionCastPlugin.Instance.Transmitter.SendUDP("Dead");
                 return;
             }
 
@@ -122,7 +81,7 @@ namespace RegionCast
                 {
                     currentLocationName = self.room.world.region.subRegions[regionNumber];
                 }
-                catch (IndexOutOfRangeException)
+                catch (ArgumentOutOfRangeException)
                 {
                     currentLocationName = regionCode;
                 }
@@ -134,7 +93,7 @@ namespace RegionCast
                     cycleNumber = 19 - cycleNumber;
                     if (session.saveState.redExtraCycles) cycleNumber += 5;
                 }
-                CycleNumber = cycleNumber;
+                Hooks.CycleNumber = cycleNumber;
             }
             else
             {
@@ -146,25 +105,25 @@ namespace RegionCast
             PlayerCount = self.room.game.Players.Count;
 
             lastUpdate = currentTime;
-            transmitter.SendUDP(SlugName, currentLocationName, regionCode);
+            RegionCastPlugin.Instance.Transmitter.SendUDP(SlugName, currentLocationName, regionCode);
         }
 
-        void SleepHook(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
+        static void SleepHook(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
             orig(self, malnourished);
-            transmitter.SendUDP("Sleeping");
+            RegionCastPlugin.Instance.Transmitter.SendUDP("Sleeping");
         }
 
-        void DreamHook(On.DreamsState.orig_InitiateEventDream orig, DreamsState self, DreamsState.DreamID dreamID)
+        static void DreamHook(On.DreamsState.orig_InitiateEventDream orig, DreamsState self, DreamsState.DreamID dreamID)
         {
             orig(self, dreamID);
-            transmitter.SendUDP("Dreaming");
+            RegionCastPlugin.Instance.Transmitter.SendUDP("Dreaming");
         }
 
-        void GameOverHook(On.RainWorldGame.orig_GameOver orig, RainWorldGame game, Creature.Grasp grasp)
+        static void GameOverHook(On.RainWorldGame.orig_GameOver orig, RainWorldGame game, Creature.Grasp grasp)
         {
             orig(game, grasp);
-            transmitter.SendUDP("Dead");
+            RegionCastPlugin.Instance.Transmitter.SendUDP("Dead");
         }
     }
 }

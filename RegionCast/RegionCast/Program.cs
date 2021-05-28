@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RCApp
 {
-    class DiscordRelay
+    class Program
     {
         // discord
         static readonly Discord.Discord discord = new Discord.Discord(746839575124770917, (long)Discord.CreateFlags.NoRequireDiscord);
@@ -44,20 +43,21 @@ namespace RCApp
 
             RunThreads(port);
 
+            // the program will now end and the background listener thread will be stopped
             Log("Exit, persued by bear");
         }
 
         static void RunThreads(int port)
         {
-            Thread rwCheckThread = new Thread(new ThreadStart(RWCheckLoop));
+            Thread rwCheckThread = new Thread(new ThreadStart(RWCheckLoop)) { IsBackground = true } ;
             rwCheckThread.Start();
 
-            Thread listenerThread = new Thread(() => StartListener(port));
+            Thread listenerThread = new Thread(() => StartListener(port)) { IsBackground = true };
             listenerThread.Start();
 
             rwCheckThread.Join();
-            listenerThread.Abort(1);
 
+            // at this point rain world is closed and the check thread has completed
             lock (discordLock)
             {
                 discord.GetActivityManager().ClearActivity(clearHandler);
@@ -77,11 +77,11 @@ namespace RCApp
                     }
                 }
                 catch (NullReferenceException) { Console.WriteLine("Discord threw nullref"); }
-                
+
                 Thread.Sleep(500);
                 rwIsOpen = CheckRWIsOpen();
             } while (rwIsOpen);
-            
+
             Log("Rain World closed - self-destruct in T minus a very small time...");
         }
 

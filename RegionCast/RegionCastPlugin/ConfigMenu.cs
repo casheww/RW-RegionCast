@@ -1,15 +1,11 @@
-﻿using System;
-using OptionalUI;
+﻿using OptionalUI;
 using UnityEngine;
 
 namespace RegionCast
 {
     class ConfigMenu : OptionInterface
     {
-        public ConfigMenu() : base(plugin: RegionCast.Instance)
-        {
-            
-        }
+        public ConfigMenu() : base(plugin: RegionCastPlugin.Instance) { }
 
         public override void Initialize()
         {
@@ -17,9 +13,9 @@ namespace RegionCast
             Tabs = new OpTab[1];
             Tabs[0] = new OpTab("RichPresence");
 
-            string modName = RegionCast.Instance.Info.Metadata.Name;
-            string modVrsn = RegionCast.Instance.Info.Metadata.Version.ToString();
-            string modAuth = RegionCast.Instance.Info.Metadata.GUID.Split('.')[0];
+            string modName = RegionCastPlugin.Instance.Info.Metadata.Name;
+            string modVrsn = RegionCastPlugin.Instance.Info.Metadata.Version.ToString();
+            string modAuth = RegionCastPlugin.Instance.Info.Metadata.GUID.Split('.')[0];
 
             Tabs[0].AddItems(new UIelement[]
             {
@@ -64,5 +60,6 @@ namespace RegionCast
             Cycles,
             Players
         }
+
     }
 }

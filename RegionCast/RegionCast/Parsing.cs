@@ -62,7 +62,7 @@ namespace RCApp
                 codes.Add(pair.Value.code);
                 logStr += $"{pair.Key} : {pair.Value.code} : {pair.Value.url}\n";
             }
-            DiscordRelay.Log(logStr);
+            Program.Log(logStr);
             return codes;
         }
 

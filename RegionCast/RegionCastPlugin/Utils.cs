@@ -34,17 +34,17 @@ namespace RegionCast
                 case ConfigMenu.Append.Cycles:
                     if (!nonSlugs.Contains(gameMode))
                     {
-                        return $" (cycle {RegionCast.CycleNumber})";
+                        return $" (cycle {Hooks.CycleNumber})";
                     }
                     return "";
-                        
+
                 case ConfigMenu.Append.Players:
-                    if (!nonSlugs.Contains(gameMode) && RegionCast.PlayerCount > 1)
+                    if (!nonSlugs.Contains(gameMode) && Hooks.PlayerCount > 1)
                     {
-                        return $" ({RegionCast.PlayerCount} players)";
+                        return $" ({Hooks.PlayerCount} players)";
                     }
                     return "";
-                        
+
 
                 default:
                 case ConfigMenu.Append.None:

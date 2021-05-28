@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>RegionCastApp</AssemblyName>
+    <RootNamespace>RCApp</RootNamespace>
+    <AssemblyVersion>0.6.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+    <Authors>casheww</Authors>
+    <Description>One of two parts of RegionCast - Discord Rich Presence for Rain World.</Description>
+    <Copyright>casheww 2021</Copyright>
+    <RepositoryUrl>https://github.com/casheww/RW-RegionCast</RepositoryUrl>
+    <Version>0.6.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+</Project>

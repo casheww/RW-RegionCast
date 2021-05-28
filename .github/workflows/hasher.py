@@ -6,6 +6,10 @@ from zipfile import ZipFile
 
 
 if __name__ == "__main__":
+    # sideapp updater doesn't exist yet, so just return
+    return
+
+    
     # get download url for latest release
     res = requests.get("https://api.github.com/repos/casheww/RW-RegionCast/releases/latest")
     download_url = res.json()["assets"][0]["url"]
