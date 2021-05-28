@@ -3,7 +3,7 @@ using BepInEx;
 
 namespace RegionCast
 {
-    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.6.0")]
+    [BepInPlugin("casheww.region_cast_discord", "RegionCast", "0.5.2")]
     public class RegionCastPlugin : BaseUnityPlugin
     {
         System.Diagnostics.Process sideapp = null;
