@@ -59,7 +59,7 @@ namespace RegionCast
 
             byte[] message = Encoding.UTF8.GetBytes(data);
             socket.SendTo(message, endpoint);
-            Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RCApp.exe");
+            //Debug.Log($"RegionCast : UDP send to {endpoint.Address}:{endpoint.Port} for RCApp.exe");
         }
 
         bool CheckIfMessageIsRepeat(string data)
