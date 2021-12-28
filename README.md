@@ -27,7 +27,7 @@ Displays the following game details on your Discord profile for other users to s
 3) Download the first .zip from the first "Assets" dropdown from [here](https://github.com/casheww/RW-RegionCast/releases/)
 4) - If using BepInEx with BOI, extract `RegionCast.dll` to `./Mods`
    - If using BepInEx without BOI, extract `RegionCast.dll` to `./BepInEx/plugins`
-5) Extract the `RegionCast-DiscordGameSDK` folder to the Rain World root directory
+5) Extract the `RegionCast-DiscordGameSDK` folder (*the folder, not its contents*) to the Rain World root directory
 
 
 ## Troubleshooting
